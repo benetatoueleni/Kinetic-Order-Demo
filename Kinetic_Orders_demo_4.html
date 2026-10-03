@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kinetic Orders demo</title>
+<style>
+:root{--bg:#F4F5F7;--card:#fff;--ink:#17212B;--mut:#5B6773;--line:#D9DEE4;--acc:#E8590C;--ok:#1B7A47;--warn:#B42318;--blue:#1D4ED8;--amber:#A16207;--violet:#6D28D9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F151B;--card:#18212A;--ink:#EEF2F6;--mut:#9BA8B5;--line:#2A3642;--ok:#4CC38A;--warn:#F97066;--blue:#7AA2FF;--amber:#F5B942;--violet:#B69CFF}}
+:root[data-theme="dark"]{--bg:#0F151B;--card:#18212A;--ink:#EEF2F6;--mut:#9BA8B5;--line:#2A3642;--ok:#4CC38A;--warn:#F97066;--blue:#7AA2FF;--amber:#F5B942;--violet:#B69CFF}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:480px;margin:0 auto;padding:0 14px 48px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0 8px}
+.demo{font-size:12px;color:var(--mut);margin:0 0 8px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 2px;font:600 13px/1.2 inherit;font-family:inherit;cursor:pointer}
+.tabs button b{display:block;font-size:16px}
+.tabs button[aria-selected=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+h1{font-size:22px;margin:14px 0 2px}
+h2{font-size:17px;margin:0 0 6px}
+.sub{color:var(--mut);margin:0 0 12px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mut{color:var(--mut);font-size:14px}
+.item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.qty{display:flex;align-items:center;gap:10px}
+.qty button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:20px;cursor:pointer}
+.qty span{min-width:18px;text-align:center;font-weight:700}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 10px}
+.seg button{padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 15px inherit;font-family:inherit;cursor:pointer}
+.seg button[aria-pressed=true]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc);color:var(--acc)}
+label{display:block;font-size:14px;color:var(--mut);margin:8px 0 3px}
+input,select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:16px inherit;font-family:inherit}
+.btn{display:block;width:100%;padding:13px;border-radius:12px;border:0;background:var(--acc);color:#fff;font:700 16px inherit;font-family:inherit;cursor:pointer;margin-top:8px}
+.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.sm{display:inline-block;width:auto;padding:9px 14px;font-size:14px;margin:6px 6px 0 0}
+.btn[disabled]{opacity:.45}
+.tot{display:flex;justify-content:space-between;padding:3px 0}
+.tot.big{font-weight:800;font-size:18px;border-top:1px solid var(--line);margin-top:6px;padding-top:8px}
+.err{color:var(--warn);font-size:14px;margin:6px 0 0}
+.tk{border-left:8px solid var(--line)}
+.tk .num{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.t-received{border-left-color:#FACC15}.t-confirmed{border-left-color:#15803D}.t-preparing{border-left-color:#F97316}.t-ready{border-left-color:#DC2626}.t-out_for_delivery{border-left-color:#7C3AED}.t-delivered,.t-collected{border-left-color:#2563EB}.t-cancelled{border-left-color:#6B7280}
+.pill{display:inline-block;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:800;color:#fff}
+.s-received{background:#FACC15;color:#1F1A00}.s-confirmed{background:#15803D}.s-preparing{background:#F97316;color:#1F1300}.s-ready{background:#DC2626}.s-out_for_delivery{background:#7C3AED}.s-delivered,.s-collected{background:#2563EB}.s-cancelled{background:#6B7280}
+.new{background:var(--ink);color:var(--bg);border-radius:8px;padding:9px 10px;font-weight:800;margin:8px 0;animation:bl 1s steps(1) infinite}
+@keyframes bl{50%{background:#F97316;color:#1F1300}}
+@media (prefers-reduced-motion:reduce){.new{animation:none}}
+.note{margin:2px 0 8px 10px;padding:5px 8px;border-left:4px solid var(--ink);background:rgba(128,128,128,.16);font-weight:700}
+.item{flex-wrap:wrap}.nt{flex:1 0 100%;margin-top:8px}
+.tl{list-style:none;margin:10px 0 0;padding:0}
+.tl li{display:flex;gap:10px;align-items:center;padding:7px 0;color:var(--mut)}
+.tl i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);flex:none}
+.tl li.on{color:var(--ink);font-weight:700}.tl li.on i{background:var(--ok);border-color:var(--ok)}
+.tl li.cur i{box-shadow:0 0 0 4px rgba(232,89,12,.25);background:var(--acc);border-color:var(--acc)}
+.brand{display:flex;align-items:center;gap:12px;margin:14px 0 12px}
+.logo{width:56px;height:56px;border-radius:14px;flex:none;background:var(--acc);color:#fff;display:flex;align-items:center;justify-content:center;font:800 26px/1 inherit;font-family:inherit;overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:cover}
+.brand h1{margin:0;font-size:22px;line-height:1.15}
+.brand .mut{margin:2px 0 0;font-size:13px}
+.brand a{color:inherit;font-weight:700}
+.seg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.seg3 button{padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 15px inherit;font-family:inherit;cursor:pointer}
+.seg3 button[aria-pressed=true]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc);color:var(--acc)}
+.foot{margin-top:18px;text-align:center}
+.foot button{background:none;border:0;color:var(--mut);text-decoration:underline;font:14px inherit;font-family:inherit;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <p class="demo">Demo with fake data. Nothing here is a real order.</p>
+    <div class="tabs" role="tablist" id="tabs"></div>
+  </div>
+  <div id="app"></div>
+  <div class="foot"><button data-a="reset">Reset demo</button></div>
+</div>
+<script>
+const MENU=[{id:1,n:'Jollof rice and chicken',p:3500},{id:2,n:'Fried rice and plantain',p:3200},{id:3,n:'Pepper soup',p:2500},{id:5,n:'Garden salad',p:1800},{id:4,n:'Bottled water',p:200}];
+const RESTO={name:'Demo Kitchen',address:'12 Aba Road, Port Harcourt, Rivers State',phone:'+234 800 000 0000',logo:''};
+const FEE=500, PHONE=RESTO.phone;
+const DEL=['received','confirmed','preparing','ready','out_for_delivery','delivered'];
+const PICK=['received','confirmed','preparing','ready','collected'];
+const LAB={received:'Received',confirmed:'Confirmed',preparing:'Being prepared',ready:'Ready',out_for_delivery:'On the way',delivered:'Delivered',collected:'Collected',cancelled:'Cancelled'};
+const TABS=[['cust','1','Customer'],['kit','2','Kitchen'],['desk','3','Front desk'],['track','4','Tracking']];
+const brand=()=>`<div class="brand"><div class="logo" aria-hidden="true">${RESTO.logo?`<img src="${esc(RESTO.logo)}" alt="">`:esc(RESTO.name.trim().charAt(0).toUpperCase())}</div>
+<div><h1>${esc(RESTO.name)}</h1><p class="mut">${esc(RESTO.address)}<br>Tel: <a href="tel:${esc(RESTO.phone.replace(/\s/g,''))}">${esc(RESTO.phone)}</a></p></div></div>`;
+const N=v=>'\u20A6'+v.toLocaleString('en-NG');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clock=t=>new Date(t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+const fresh=()=>({tab:'cust',cart:{},type:'delivery',orders:[],next:142,shift:false,trackId:null,done:null,err:'',form:{name:'',phone:'',addr:'',pay:'cash',note:''},notes:{},snd:{k:'bell',d:'chime'},sndMsg:''});
+let S=fresh();
+const steps=o=>o.type==='delivery'?DEL:PICK;
+const open=o=>!['delivered','collected','cancelled'].includes(o.status);
+const items=()=>MENU.filter(m=>S.cart[m.id]>0);
+const sub=()=>items().reduce((a,m)=>a+m.p*S.cart[m.id],0);
+
+/* Alert sounds. Three styles (bell, chime, beep), picked separately for the kitchen and the front desk.
+   Each clip is synthesised once, normalised, and played by an <audio> element at volume 1.
+   level 0 = kitchen, new confirmed order. 1 = kitchen urgent or cancelled. 2 = front desk, new order to confirm. */
+const SR=22050;
+const STYLES={bell:'Bell',chime:'Chime',beep:'Beep'};
+const VOICES={
+  bell:{dur:1.3,parts:[[1,1,1.5],[2.76,.55,.9],[5.4,.3,.5],[8.93,.15,.3]]},
+  chime:{dur:.9,parts:[[1,1,.8],[2,.3,.45],[3,.12,.25]]},
+  beep:{dur:.16,parts:[[1,1,0],[2,.12,0]],flat:true}
+};
+function pattern(style,urgent){
+  const ev=[];
+  if(style==='bell'){const n=urgent?6:3,sp=urgent?.28:.55;for(let i=0;i<n;i++)ev.push([i*sp,urgent?988:880])}
+  else if(style==='chime'){const runs=urgent?3:2,gap=urgent?.55:.9,N=urgent?[1319,1568,2093]:[1319,1760];
+    for(let r=0;r<runs;r++)N.forEach((f,i)=>ev.push([r*gap+i*.2,f]))}
+  else{const sets=urgent?2:2,per=urgent?5:3,sp=urgent?.13:.2,gap=urgent?.9:1.0,f=urgent?1400:1000;
+    for(let r=0;r<sets;r++)for(let i=0;i<per;i++)ev.push([r*gap+i*sp,f])}
+  return ev;
+}
+function synth(style,urgent){
+  const V=VOICES[style], ev=pattern(style,urgent), last=Math.max(...ev.map(e=>e[0])), total=last+V.dur+.1;
+  const buf=new Float32Array(Math.ceil(total*SR));
+  ev.forEach(([t,f])=>{
+    const s0=Math.floor(t*SR), len=Math.floor(V.dur*SR);
+    V.parts.forEach(([ratio,amp,dec])=>{
+      for(let k=0;k<len&&s0+k<buf.length;k++){
+        const x=k/SR;
+        const env=V.flat?Math.min(1,k/(.006*SR),(len-k)/(.012*SR)):Math.min(1,k/(.003*SR))*Math.exp(-x/dec);
+        buf[s0+k]+=amp*env*Math.sin(2*Math.PI*f*ratio*x);
+      }
+    });
+  });
+  let peak=0;for(let i=0;i<buf.length;i++)peak=Math.max(peak,Math.abs(buf[i]));
+  const drive=1.3, norm=Math.tanh(drive), pcm=new Int16Array(buf.length);
+  for(let i=0;i<buf.length;i++)pcm[i]=Math.round(Math.tanh(buf[i]/peak*drive)/norm*32767*.97);
+  return pcm;
+}
+function wav(pcm){
+  const b=new ArrayBuffer(44+pcm.length*2), v=new DataView(b), w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};
+  w(0,'RIFF');v.setUint32(4,36+pcm.length*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,SR,true);v.setUint32(28,SR*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,pcm.length*2,true);
+  new Int16Array(b,44).set(pcm);return new Blob([b],{type:'audio/wav'});
+}
+const URLS={};
+const styleFor=level=>level===2?S.snd.d:S.snd.k;
+function clipUrl(st,urgent){
+  const key=st+(urgent?'-u':'-n');
+  if(!URLS[key])URLS[key]=URL.createObjectURL(wav(synth(st,urgent)));
+  return URLS[key];
+}
+/* One audio element per alert level, created inside a tap (Start shift, Test, or picking a style).
+   Phones and tablets only allow sound on elements that a tap has started, so every element is created and
+   warmed up silently in the tap, and later rings simply replay it. */
+const EL={};
+function getEl(level){
+  const st=styleFor(level);
+  if(!EL[level]||EL[level].style!==st){
+    const el=new Audio(clipUrl(st,level===1));el.preload='auto';el.volume=1;
+    el.addEventListener('error',()=>say('This browser could not load the sound file.'));
+    EL[level]={style:st,el};
+  }
+  return EL[level].el;
+}
+function say(m){if(S.sndMsg!==m){S.sndMsg=m;render()}}
+function unlock(skip){ /* warm up every other alert silently; the one about to ring for real is left alone */
+  [0,1,2].forEach(l=>{
+    if(l===skip)return;
+    const el=getEl(l);if(!el.paused)return;
+    el.muted=true;
+    el.play().then(()=>{if(el.muted){el.pause();el.currentTime=0}el.muted=false}).catch(()=>{el.muted=false});
+  });
+}
+function beep(level,force){
+  if(!S.shift&&!force)return;
+  try{
+    const el=getEl(level);
+    try{el.currentTime=0}catch(e){}
+    el.volume=1;el.muted=false;
+    const p=el.play();
+    if(p&&p.then)p.then(()=>say('')).catch(err=>{
+      if(err&&err.name==='AbortError')return;
+      say('The browser blocked the sound ('+(err&&err.name?err.name:'unknown')+'). Tap "Test this sound" once, then try again.');
+    });
+    if(navigator.vibrate)navigator.vibrate(level===1?[300,100,300,100,300]:[250,100,250]);
+  }catch(e){say('Sound error: '+e.name)}
+}
+function sndPick(role){
+  const cur=S.snd[role];
+  return `<div class="card"><b>${role==='k'?'Kitchen':'Front desk'} sound</b>
+  <div class="seg3">${Object.keys(STYLES).map(k=>`<button data-a="snd" data-role="${role}" data-id="${k}" aria-pressed="${cur===k}">${STYLES[k]}</button>`).join('')}</div>
+  <button class="btn alt" data-a="sndtest" data-role="${role}">Test this sound</button>
+  <p class="mut">Tap a style to hear it. Turn the volume to maximum and test it while the kitchen is really noisy.</p>${S.sndMsg?`<p class="err">${esc(S.sndMsg)}</p>`:''}</div>`;
+}
+const kitAck=o=>!o.kseen&&(o.status==='confirmed'||(o.status==='cancelled'&&o.wasConf));
+const deskAck=o=>o.status==='received'||(o.status==='cancelled'&&o.cancelBy==='customer'&&!o.dseen);
+function alarm(){
+  const k=S.orders.filter(kitAck), d=S.orders.filter(deskAck);
+  if(k.length){const wait=Date.now()-Math.min(...k.map(o=>o.kt));beep(k.some(o=>o.status==='cancelled')||wait>30000?1:0)}
+  else if(d.length)beep(2);
+}
+setInterval(alarm,2500);
+
+function move(o,to){o.status=to;o.log.push({s:to,t:Date.now()});o.err='';
+  if(to==='confirmed'){o.wasConf=true;o.kseen=false;o.kt=Date.now()}
+  if(['preparing','ready'].includes(to))o.kseen=true}
+function cancelOrder(o,by){
+  move(o,'cancelled');o.cancelBy=by;o.dseen=by!=='customer';
+  if(o.wasConf){o.kseen=false;o.kt=Date.now()}
+}
+
+function custView(){
+  if(S.done){const o=S.done;return `${brand()}<h1>Order #${String(o.num).padStart(4,'0')} placed</h1>
+  <p class="sub">The front desk has been notified. The customer gets a link to follow the order.</p>
+  <div class="card"><div class="tot"><span>Total to pay ${o.pay==='cash'?'in cash':o.pay==='pos'?'by POS':'by bank transfer'}</span><b>${N(o.total)}</b></div>
+  <p class="mut">You pay the restaurant directly. Kinetic does not hold any money.</p></div>
+  <button class="btn" data-a="goTrack">See what the customer sees</button>
+  <button class="btn alt" data-a="newOrder">Place another order</button>`}
+  const s=sub(), fee=S.type==='delivery'&&s>0?FEE:0, ok=s>0;
+  return `${brand()}<p class="sub">Order for delivery or pickup. Opens from a link in the WhatsApp bio, Instagram, or a QR code.</p>
+  <div class="card">${MENU.map(m=>{const q=S.cart[m.id]||0;return `<div class="item"><div><div>${m.n}</div><div class="mut">${N(m.p)}</div></div>
+  <div class="qty"><button data-a="dec" data-id="${m.id}" aria-label="Remove one ${m.n}">\u2212</button><span>${q}</span><button data-a="inc" data-id="${m.id}" aria-label="Add one ${m.n}">+</button></div>
+  ${q?`<input class="nt" data-n="${m.id}" value="${esc(S.notes[m.id]||'')}" placeholder="Note for this item, e.g. no pepper" aria-label="Note for ${m.n}">`:''}</div>`}).join('')}</div>
+  <div class="seg"><button data-a="type" data-id="delivery" aria-pressed="${S.type==='delivery'}">Delivery</button><button data-a="type" data-id="pickup" aria-pressed="${S.type==='pickup'}">Pickup</button></div>
+  <div class="card"><label for="f-name">Your name</label><input id="f-name" data-f="name" value="${esc(S.form.name)}" autocomplete="name">
+  <label for="f-phone">Phone number</label><input id="f-phone" data-f="phone" value="${esc(S.form.phone)}" inputmode="tel" placeholder="0803 000 0000" autocomplete="tel">
+  ${S.type==='delivery'?`<label for="f-addr">Delivery address</label><input id="f-addr" data-f="addr" value="${esc(S.form.addr)}" autocomplete="street-address">`:''}
+  <label for="f-pay">How will you pay?</label><select id="f-pay" data-f="pay"><option value="cash"${S.form.pay==='cash'?' selected':''}>Cash</option><option value="pos"${S.form.pay==='pos'?' selected':''}>POS</option><option value="transfer"${S.form.pay==='transfer'?' selected':''}>Bank transfer</option></select>
+  <label for="f-note">Notes for the whole order (optional)</label><input id="f-note" data-f="note" value="${esc(S.form.note)}" placeholder="e.g. please do not overcook my food"></div>
+  <div class="card"><div class="tot"><span>Food</span><span>${N(s)}</span></div><div class="tot"><span>Delivery</span><span>${N(fee)}</span></div><div class="tot big"><span>Total</span><span>${N(s+fee)}</span></div></div>
+  ${S.err?`<p class="err">${esc(S.err)}</p>`:''}
+  <button class="btn" data-a="place"${ok?'':' disabled'}>Place order</button>`;
+}
+
+const lines=o=>o.items.map(i=>`<div>${i.q} \u00D7 ${esc(i.n)}</div>${i.note?`<div class="note">${esc(i.note)}</div>`:''}`).join('')+(o.note?`<div class="note">Order note: ${esc(o.note)}</div>`:'');
+function ticket(o,role){
+  let acts='',ban='';
+  if(role==='kit'){
+    if(kitAck(o))ban=o.status==='cancelled'?`<div class="new">CANCELLED by the ${esc(o.cancelBy)}. Stop preparing this order.</div><button class="btn" data-a="seen" data-id="${o.id}">Got it</button>`:`<div class="new">NEW ORDER</div><button class="btn" data-a="seen" data-id="${o.id}">Got it, stop the sound</button>`;
+    if(o.status==='confirmed')acts=`<button class="btn sm" data-a="mv" data-id="${o.id}" data-to="preparing">Start preparing</button>`;
+    if(o.status==='preparing')acts=`<button class="btn sm" data-a="mv" data-id="${o.id}" data-to="ready">Mark ready</button>`;
+    if(o.status==='ready')acts=`<p class="mut">Ready. The front desk takes it from here.</p>`;
+  }else{
+    if(o.status==='received'){ban=`<div class="new">New order: confirm it</div>`;acts=`<button class="btn sm" data-a="mv" data-id="${o.id}" data-to="confirmed">Confirm order</button>`}
+    if(o.status==='cancelled'&&deskAck(o))ban=`<div class="new">Cancelled by the customer</div><button class="btn" data-a="dack" data-id="${o.id}">OK</button>`;
+    if(['received','confirmed','preparing'].includes(o.status))acts+=(o.status==='received'?'':`<p class="mut">The kitchen is working on it.</p>`)+`<button class="btn sm alt" data-a="cancel" data-id="${o.id}">Cancel order</button>`;
+    if(o.status==='ready'&&o.type==='delivery')acts=`<label for="r${o.id}">Rider name</label><input id="r${o.id}" data-rid="${o.id}" value="${esc(o.rider||'')}" placeholder="Type the rider's name"><button class="btn sm" data-a="out" data-id="${o.id}">Send out for delivery</button>`;
+    if(o.status==='ready'&&o.type==='pickup')acts=`<button class="btn sm" data-a="mv" data-id="${o.id}" data-to="collected">Mark collected</button>`;
+    if(o.status==='out_for_delivery')acts=`<p class="mut">Rider: ${esc(o.rider)}</p><button class="btn sm" data-a="mv" data-id="${o.id}" data-to="delivered">Mark delivered</button>`;
+    if(o.status!=='cancelled')acts+=`<button class="btn sm alt" data-a="paid" data-id="${o.id}">${o.paid?'Paid \u2713':'Mark as paid'}</button>`;
+  }
+  const who=role==='desk'?`<div class="mut">${esc(o.name)} \u00B7 ${esc(o.phone)}${o.type==='delivery'?'<br>'+esc(o.addr):''}<br>Collect ${N(o.total)} \u00B7 ${o.pay==='cash'?'cash':o.pay==='pos'?'POS':'bank transfer'}${o.pay==='transfer'?' (confirm after the alert)':''}</div>`:'';
+  return `<div class="card tk t-${o.status}"><div class="row"><span class="num">#${String(o.num).padStart(4,'0')}</span><span class="pill s-${o.status}">${LAB[o.status]}</span></div>
+  <div class="mut">${o.type==='delivery'?'Delivery':'Pickup'} \u00B7 ${clock(o.t)}</div>${ban}
+  <div style="margin:8px 0">${lines(o)}</div>${who}${o.err?`<p class="err">${esc(o.err)}</p>`:''}${acts}</div>`;
+}
+
+function kitView(){
+  const list=S.orders.filter(o=>['confirmed','preparing','ready'].includes(o.status)||kitAck(o));
+  return `<h1>Kitchen screen</h1><p class="sub">Stays open on a tablet. Rings when the front desk confirms an order, and when an order is cancelled.</p>
+  ${S.shift?`<div class="card"><b>Shift started.</b> <span class="mut">Sound is on. A confirmed order rings until someone taps it. After 30 seconds the alert gets faster.</span></div>`:`<button class="btn" data-a="shift">Start shift</button><p class="mut">Tap this first. Phones and tablets only allow sound after a tap. Then place an order in Customer and confirm it in Front desk.</p>`}
+  ${sndPick('k')}
+  ${list.length?list.map(o=>ticket(o,'kit')).join(''):`<div class="card mut">Nothing to prepare. Orders appear here when the front desk confirms them.</div>`}`;
+}
+function deskView(){
+  const list=S.orders.filter(o=>open(o)||deskAck(o));
+  return `<h1>Front desk</h1><p class="sub">Rings for every new order. Confirms it, picks the rider, cancels, and marks paid.</p>
+  ${sndPick('d')}
+  ${list.length?list.map(o=>ticket(o,'desk')).join(''):`<div class="card mut">No open orders. Place one in the Customer tab.</div>`}`;
+}
+function trackView(){
+  if(!S.orders.length)return `${brand()}<h1>Order tracking</h1><div class="card mut">Place an order in the Customer tab first.</div>`;
+  const o=S.orders.find(x=>x.id===S.trackId)||S.orders[S.orders.length-1];
+  const st=steps(o), idx=st.indexOf(o.status);
+  const sel=S.orders.length>1?`<label for="tsel">Order</label><select id="tsel" data-a="pick">${S.orders.map(x=>`<option value="${x.id}"${x.id===o.id?' selected':''}>#${String(x.num).padStart(4,'0')}</option>`).join('')}</select>`:'';
+  const can=o.status==='received'||(o.status==='confirmed'&&!o.kseen);
+  return `${brand()}<h1>Order #${String(o.num).padStart(4,'0')}</h1><p class="sub">This is the page the customer opens from a link. No app, no login, no phone number or address shown.</p>${sel}
+  <div class="card"><span class="pill s-${o.status}">${LAB[o.status]}</span>
+  ${o.status==='cancelled'?`<p class="mut">${o.cancelBy==='customer'?'You cancelled this order. The restaurant has been told.':'The restaurant cancelled this order. Call '+PHONE+' if you have questions.'}</p>`:`<ul class="tl">${st.map((s,i)=>`<li class="${i<=idx?'on':''} ${i===idx?'cur':''}"><i></i>${LAB[s]}</li>`).join('')}</ul>`}</div>
+  <div class="card">${o.items.map(i=>`<div class="tot"><span>${i.q} \u00D7 ${esc(i.n)}</span><span>${N(i.q*i.p)}</span></div>${i.note?`<div class="mut" style="margin:0 0 4px 10px">Note: ${esc(i.note)}</div>`:''}`).join('')}${o.note?`<div class="mut">Order note: ${esc(o.note)}</div>`:''}<div class="tot"><span>Delivery</span><span>${N(o.fee)}</span></div><div class="tot big"><span>Total</span><span>${N(o.total)}</span></div>
+  <p class="mut">Pay the restaurant by ${o.pay==='cash'?'cash':o.pay==='pos'?'POS':'bank transfer'}.</p></div>
+  ${can?(o.bad>=5?`<div class="card"><b>Cancel is locked</b><p class="mut" style="margin:4px 0 0">Too many wrong tries. Call the restaurant: ${PHONE}</p></div>`:`<div class="card"><b>Cancel my order</b><label for="c4">Last 4 digits of your phone number</label><input id="c4" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="0000">${o.cmsg?`<p class="err">${esc(o.cmsg)}</p>`:''}<button class="btn alt" data-a="ccancel" data-id="${o.id}">Cancel my order</button><p class="mut">You can cancel until the kitchen starts preparing. The kitchen sees it straight away.</p></div>`):(o.status==='cancelled'?'':`<div class="card"><b>Need to change or cancel?</b><p class="mut" style="margin:4px 0 0">Your food is already in progress. Call the restaurant: ${PHONE}</p></div>`)}`;
+}
+
+function render(){
+  document.getElementById('tabs').innerHTML=TABS.map(([k,n,l])=>`<button role="tab" data-a="tab" data-id="${k}" aria-selected="${S.tab===k}"><b>${n}</b>${l}</button>`).join('');
+  document.getElementById('app').innerHTML={cust:custView,kit:kitView,desk:deskView,track:trackView}[S.tab]();
+  
+}
+
+function place(){
+  const f=S.form, s=sub(); const digits=f.phone.replace(/\D/g,'');
+  if(!f.name.trim()){S.err='Enter the customer name.';return}
+  if(digits.length<10){S.err='Enter a valid phone number.';return}
+  if(S.type==='delivery'&&!f.addr.trim()){S.err='Enter the delivery address.';return}
+  const fee=S.type==='delivery'?FEE:0, num=S.next++;
+  const o={id:num,num,type:S.type,name:f.name.trim(),phone:f.phone.trim(),addr:f.addr.trim(),pay:f.pay,note:f.note.trim(),items:items().map(m=>({n:m.n,p:m.p,q:S.cart[m.id],note:(S.notes[m.id]||'').trim()})),fee,total:s+fee,status:'received',paid:false,kseen:false,dseen:true,wasConf:false,kt:0,t:Date.now(),log:[{s:'received',t:Date.now()}],rider:'',err:''};
+  S.orders.push(o);S.trackId=o.id;S.done=o;S.err='';S.cart={};S.notes={};S.form.note='';beep(2);
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b||b.tagName==='SELECT')return;
+  const a=b.dataset.a,id=+b.dataset.id,o=S.orders.find(x=>x.id===id);
+  if(a==='tab'){S.tab=b.dataset.id;S.done=null}
+  else if(a==='inc')S.cart[id]=(S.cart[id]||0)+1;
+  else if(a==='dec'){S.cart[id]=Math.max(0,(S.cart[id]||0)-1);if(!S.cart[id])delete S.notes[id]}
+  else if(a==='type')S.type=b.dataset.id;
+  else if(a==='place')place();
+  else if(a==='goTrack'){S.tab='track';S.done=null}
+  else if(a==='newOrder')S.done=null;
+  else if(a==='shift'){S.shift=true;unlock(0);beep(0,true)}
+  else if(a==='test'){unlock();beep(0,true)}
+  else if(a==='snd'){S.snd[b.dataset.role]=b.dataset.id;{const L=b.dataset.role==='d'?2:0;unlock(L);beep(L,true)}}
+  else if(a==='sndtest'){const L=b.dataset.role==='d'?2:0;unlock(L);beep(L,true)}
+  else if(a==='seen')o.kseen=true;
+  else if(a==='dack')o.dseen=true;
+  else if(a==='mv')move(o,b.dataset.to);
+  else if(a==='out'){if(!(o.rider||'').trim())o.err='Type the rider name first.';else move(o,'out_for_delivery')}
+  else if(a==='cancel'){if(confirm('Cancel this order? A reason is required in the real system.'))cancelOrder(o,'front desk')}
+  else if(a==='ccancel'){
+    const v=((document.getElementById('c4')||{}).value||'').trim(), last4=o.phone.replace(/\D/g,'').slice(-4);
+    if((o.bad||0)>=5){}
+    else if(v!==last4){o.bad=(o.bad||0)+1;o.cmsg=o.bad>=5?'Too many wrong tries. This order is locked. Call the restaurant.':'Those digits do not match. '+(5-o.bad)+' tries left.'}
+    else if(confirm('Cancel your order?')){o.cmsg='';cancelOrder(o,'customer')}
+  }
+  else if(a==='paid')o.paid=!o.paid;
+  else if(a==='reset'){const sn=S.snd;S=fresh();S.snd=sn}
+  render();
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.f)S.form[t.dataset.f]=t.value;
+  if(t.dataset.n)S.notes[t.dataset.n]=t.value;
+  if(t.dataset.rid){const o=S.orders.find(x=>x.id===+t.dataset.rid);if(o)o.rider=t.value}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.f==='pay')S.form.pay=t.value;
+  if(t.dataset.a==='pick'){S.trackId=+t.value;render()}
+});
+render();
+</script>
+</body>
+</html>
